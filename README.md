@@ -2,11 +2,17 @@
 
 ## Objectives
 
+1. Create a custom base class in Swift.
+2. Declare properties with initial values.
+3. Create an immutable property covered by a designated initializer.
+4. Write a designated initializer that covers multiple properties.
+5. Write a convenience initializer that passes through a designated initializer.
+
 ## Base Class
 
-Objective-C developer will be used to writing a custom classes that inherit from `NSObject`. This pattern, while available, is not the norm in a Swift-only application. Creating a basic class, such as for a data model, utilizes **no inheritance.** Mind blowing, right?
+Objective-C developers will be used to writing custom classes that inherit from `NSObject`. This pattern, while available, is not the norm in a Swift-only application. Creating a basic custom class, such as for a data model, utilizes **no inheritance.** Mind blowing, right?
 
-This called "creating a base class." Swift base classes don't come with any of the baggage associated with `NSObject` as a default, but they, as a default, also can't be used in certain ways that `NSObject` subclasses can. It's a double-edged sword: a true base class can't be equated, compared, sorted, or have its property data printed without having those behaviors explicitly defined, but it also provides us with exacting control of how those behaviors are implemented if we wish to make them available to the user of our class (which will often be ourselves).
+This is called "creating a base class." Swift base classes don't come with any of the baggage associated with `NSObject` as a default, but they, as a default, also can't be used in certain ways that `NSObject` subclasses can. It's a double-edged sword: a true base class can't be equated, compared, sorted, or have its property data printed without having those behaviors explicitly defined, but it also provides us with exacting control of how those behaviors are implemented if we wish to make them available to the user of our class (which will often just be ourselves).
 
 These abilities are often noted to the Swift compiler by the use of protocols to which the base class must conform in order to be used in those particular ways. We're not going to discuss Swift protocols at this time, just understand for now that something as familiar as equating two instances of a custom base class (i.e. the `Equatable` protocol) or customizing how a base class prints itself (i.e. the `CustomDebugStringConvertible` protocol), cannot be performed on a Swift base class as a default until conformance to the appropriate protocol is defined.
 
@@ -34,7 +40,7 @@ That's it. We've just established a custom base class named `Student`.
 
 ## Properties
 
-Properties should be defined at the top of a class's scope. Just like loose instances, mutable properties are defined with `var` and immutable properties are defined with `let` (we'll discuss these in a moment). Using an assignment operator (`=`) in the property's definition implicitly initializes that property to the assigned value. This allows us create properties on our `Student` class before writing an initializer (remember that non-optionals cannot be initialized to `nil`, so Swift requires that non-optional properties be initialized to some default value of the correct type).
+Properties should be defined at the top of a class's scope. Just like loose instances, mutable properties are defined with `var` and immutable properties are defined with `let` (we'll discuss these in a moment). Using an assignment operator (`=`) in the property's definition implicitly initializes that property to the assigned value. This allows us to create properties on our `Student` class before writing an initializer (remember that non-optionals cannot be initialized to `nil`, so Swift requires that non-optional properties be initialized to some default value of the correct type).
 
 **Note:** *The arrangement of properties in a class file is largely up to personal style, but you should attempt to arrange them in the "least-surprising way possible". This typically means arranging them in the order in which they are initialized or set, which should generally follow their order of importance.* 
 
@@ -98,7 +104,7 @@ mark.email = "markymark@funkybun.ch"
 mark.phone = "(314) 159-2654"
 ```
 
-![](screenshot)
+![](https://curriculum-content.s3.amazonaws.com/swift/swift-base-class/error_cannot_assign_to_readonly_property.png)
 
 The solution to this is to provide our class with an initializer that sets the readonly property according to a parameter (or argument).
 
@@ -106,7 +112,7 @@ The solution to this is to provide our class with an initializer that sets the r
 
 Just like in Objective-C, the "designated initializer" is the one which *provides the most coverage.* It does not necessarily set every property owned by the class, but designated initializers must provide coverage for every property that is not given a default value.
 
-If we change the `username` property's definition to a type annotation without an assignment, we are required by the compiler to provide an initializer that covers it. Designated initializers are methods which begin with the keyword `init` and include a list of accepted arguments within their parentheses, just like normal function and method syntax. To include a designated initializer that covers the `username` property on our `Student` class, we would add it below the property list.
+If we change the `username` property's definition to a type annotation without an assignment, we are required by the compiler to provide an initializer that covers it. Designated initializers are methods which begin with the keyword `init` and include a list of accepted arguments within their parentheses, just like normal function and method syntax. To include a designated initializer that covers the `username` property on our `Student` class, we would add it below the property list:
 
 ```swift
 //  Student.swift
@@ -126,9 +132,9 @@ class Student {
 }
 ```
 
-You'll notice that within the initializer, the `self.` notation is prefixed to the name of the property being assigned. This is to disambiguate to the compiler that we mean for the *property* to be assigned the value of the *argument*. Without the `self.` prefix, the compiler would confuse us for trying to assign the `username` argument to itself, which not only throws an "cannot assign to let constant" error, but also fails to provide coverage of the property assignment:
+You'll notice that within the initializer, the `self.` notation is prefixed to the name of the property being assigned. This is to disambiguate to the compiler that we mean for the *property* to be assigned the value of the *argument*. Without the `self.` prefix, the compiler would confuse us for trying to assign the `username` argument to itself, which not only throws a "cannot assign to let constant" error, but also fails to provide coverage of the property assignment:
 
-![](screenshot-initializer without self.)
+![](https://curriculum-content.s3.amazonaws.com/swift/swift-base-class/error_self_not_prefixed_in_initializer.png)
 
 Once we've set up the designated initializer, we can use it from the AppDelegate to create an instance of our custom base class with a particular value for our readonly `username` property. We can then assign the rest of the mutable properties the same as before:
 
@@ -162,7 +168,7 @@ class Student {
     }  // error
 }
 ```
-![](screenshot-incomplete-initializer)
+![](https://curriculum-content.s3.amazonaws.com/swift/swift-base-class/error_uninitialized_properties.png)
 
 However, we no longer have a way of providing coverage to all of our properties. We can silence the compiler by including them in the designated initializer:
 
@@ -195,7 +201,7 @@ mark.phone = "(314) 159-2654"
 We can also reassign the mutable properties after initialization:
 
 ```swift
-mark.firstName = "Marky-Mark"
+mark.firstName = "Marky Mark"
 mark.lastName = "and the Funky Bunch"
 ```
 But, if we try to reassign an immutable property, we'll get an error:
@@ -205,16 +211,16 @@ let mark = Student(username: "markedwardmurray", firstName: "Mark", lastName: "M
 mark.email = "markymark@funkybun.ch"
 mark.phone = "(314) 159-2654"
 
-mark.firstName = "Marky-Mark"
+mark.firstName = "Marky Mark"
 mark.lastName = "and the Funky Bunch"
 mark.username = "markymark"  // error
 ```
 
-![](screenshot-reassign-immutable-property)
+![](https://curriculum-content.s3.amazonaws.com/swift/swift-base-class/error_cannot_assign_to_readonly_property_2.png)
 
 ## Convenience Initializers
 
-Swift permits creation of convenience initializers by preceding an initializer with the keyword `convenience`. **A convenience initializer must call a designated initializer.** This is how the compiler ensures that complete coverage all properties will be provided.
+Swift permits creation of convenience initializers by preceding an initializer with the keyword `convenience`. **A convenience initializer must call a designated initializer.** This is how the compiler ensures that complete coverage of all properties will be provided.
 
 Let's create a new convenience initializer that only takes an argument for `username` and passes in default values (empty strings) for the other two arguments in the designated initializer. The designated initializer can be called within a convenience initializer by prefixing the `self.` keyword to the initializer's call. Setting this will look like so:
 
@@ -285,71 +291,3 @@ email: markymark@funkybun.ch
 phone: (314) 159-2654
 ```
 
-## Optional Properties
-
-```swift
-//  Student.swift
-
-import Foundation
-
-class Student {
-    let username: String
-    var firstName: String?
-    var lastName: String?
-    var email: String?
-    var phone: String?
-    
-    init(username: String) {
-        self.username = username
-    }
-}
-```
-
-```swift
-let mark = Student(username: "markedwardmurray")
-         
-print("username: \(mark.username)")
-print("firstName: \(mark.firstName)")
-print("lastName: \(mark.lastName)")
-print("email: \(mark.email)")
-print("phone: \(mark.phone)")
-```
-This will print:
-
-```
-username: markedwardmurray
-firstName: nil
-lastName: nil
-email: nil
-phone: nil
-```
-
-```
-username: markedwardmurray
-firstName: Optional("Mark")
-lastName: Optional("Murray")
-email: Optional("markymark@funkybun.ch")
-phone: Optional("(314) 159-2654")
-```
-
-## Calculated Property
-
-```swift
-//  Student.swift
-
-import Foundation
-
-class Student {
-    let username: String
-    var firstName: String?
-    var lastName: String?
-    var email: String?
-    var phone: String?
-    
-    var fullName: String { return "\(firstName) \(lastName)" }
-    
-    init(username: String) {
-        self.username = username
-    }
-}
-```
